@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -35,4 +35,13 @@ public class RoomNodeTypeSO : ScriptableObject
     [Header("One Type Should be None (Unassigned)")]
     #endregion Header
     public bool isNone;
+
+    #region Validation
+#if UNITY_EDITOR // sadece unity editor'de çalışır
+    private void OnValidate()
+    {
+        HelperUtilities.ValidateCheckEmptyString(this, nameof(roomNodeTypeName), roomNodeTypeName);
+    }
+#endif
+    #endregion
 }

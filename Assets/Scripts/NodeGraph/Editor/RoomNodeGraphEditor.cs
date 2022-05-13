@@ -106,14 +106,14 @@ public class RoomNodeGraphEditor : EditorWindow
         switch (currentEvent.type)
         {
             case EventType.MouseDown:
-                ProcessMooseDownEvent(currentEvent);
+                ProcessMouseDownEvent(currentEvent);
                 break;
             default:
                 break;
         }
     }
 
-    private void ProcessMooseDownEvent(Event currentEvent)
+    private void ProcessMouseDownEvent(Event currentEvent)
     {
         if(currentEvent.button == 1)  // right click
         {

@@ -1,12 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor.Callbacks;
 using UnityEditor;
 
 public class RoomNodeGraphEditor : EditorWindow
 {
 
     private GUIStyle roomNodeStyle;
+    private static RoomNodeGraphSO currentRoomNodeGraph;
+    private RoomNodeTypeListSO roomNodeTypeList;
 
     // node layout values
     private const float nodeWidth = 160f;
@@ -30,18 +31,107 @@ public class RoomNodeGraphEditor : EditorWindow
         roomNodeStyle.normal.textColor = Color.white;
         roomNodeStyle.padding = new RectOffset(nodePadding, nodePadding, nodePadding, nodePadding);
         roomNodeStyle.border = new RectOffset(nodeBorder, nodeBorder, nodeBorder, nodeBorder);
+
+        // Load room node types
+        roomNodeTypeList = GameResources.Instance.roomNodeTypeList;
     }
+
+    [OnOpenAsset(0)]
+    public static bool OnDoubleClickAsset(int instanceID, int line)
+    {
+        RoomNodeGraphSO roomNodeGraph = EditorUtility.InstanceIDToObject(instanceID) as RoomNodeGraphSO;
+
+        if(roomNodeGraph != null)
+        {
+            OpenWindow();
+
+            currentRoomNodeGraph = roomNodeGraph;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    
 
     private void OnGUI()
     {
-        //node pozisyonu
-        GUILayout.BeginArea(new Rect(new Vector2(100f, 100f), new Vector2(nodeWidth, nodeHeight)), roomNodeStyle);
-        //node label
-        EditorGUILayout.LabelField("Node 1");
-        GUILayout.EndArea();
+        if(currentRoomNodeGraph != null)
+        {
+            ProcessEvents(Event.current);
 
-        GUILayout.BeginArea(new Rect(new Vector2(300f, 300f), new Vector2(nodeWidth, nodeHeight)), roomNodeStyle);
-        EditorGUILayout.LabelField("Node 2");
-        GUILayout.EndArea();
+            DrawRoomNodes();
+        }
+
+        if (GUI.changed)
+            Repaint();
+    }
+
+    private void ProcessEvents(Event currentEvent)
+    {
+        ProcessRoomNodeGraphEvents(currentEvent);
+    }
+
+    private void ProcessRoomNodeGraphEvents(Event currentEvent)
+    {
+        switch (currentEvent.type)
+        {
+            case EventType.MouseDown:
+                ProcessMooseDownEvent(currentEvent);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void ProcessMooseDownEvent(Event currentEvent)
+    {
+        if(currentEvent.button == 1)  // right click
+        {
+            ShowContextMenu(currentEvent.mousePosition);
+        }
+    }
+
+    private void ShowContextMenu(Vector2 mousePosition)
+    {
+        GenericMenu menu = new GenericMenu();
+
+        menu.AddItem(new GUIContent("Create Room Node"), false, CreateRoomNode, mousePosition);
+
+        menu.ShowAsContext();
+    }
+
+    private void CreateRoomNode(object mousePoisitionObject)
+    {
+        CreateRoomNode(mousePoisitionObject, roomNodeTypeList.list.Find(x=> x.isNone));
+    }
+
+    private void CreateRoomNode(object mousePoisitionObject, RoomNodeTypeSO roomNodeType)
+    {
+        Vector2 mousePosition = (Vector2)mousePoisitionObject;
+
+        // create room node scriptable object
+        RoomNodeSO roomNode = ScriptableObject.CreateInstance<RoomNodeSO>();
+
+        currentRoomNodeGraph.roomNodeList.Add(roomNode);
+
+        // set room node values
+        roomNode.Initialise(new Rect(mousePosition, new Vector2(nodeWidth, nodeHeight)), currentRoomNodeGraph, roomNodeType);
+
+        // add room node to room node graph scriptable object asset db
+        AssetDatabase.AddObjectToAsset(roomNode, currentRoomNodeGraph);
+
+        AssetDatabase.SaveAssets();
+    }
+
+    private void DrawRoomNodes()
+    {
+        foreach(RoomNodeSO roomNode in currentRoomNodeGraph.roomNodeList)
+        {
+            roomNode.Draw(roomNodeStyle);
+        }
+
+        GUI.changed = true;
     }
 }

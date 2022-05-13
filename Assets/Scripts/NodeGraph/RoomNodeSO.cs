@@ -66,6 +66,8 @@ public class RoomNodeSO : ScriptableObject
         return roomArray;
     }
 
+    /* NODE DRAG AND DROP LOGIC */
+
     public void ProcessEvents(Event currentEvent)
     {
         switch (currentEvent.type)

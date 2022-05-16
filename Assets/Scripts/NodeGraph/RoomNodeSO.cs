@@ -51,6 +51,27 @@ public class RoomNodeSO : ScriptableObject
             int selection = EditorGUILayout.Popup("", selected, GetRoomNodeTypesToDisplay());
 
             roomNodeType = roomNodeTypeList.list[selection];
+
+            if (roomNodeTypeList.list[selected].isCorridor && !roomNodeTypeList.list[selection].isCorridor || !roomNodeTypeList.list[selected].isCorridor && roomNodeTypeList.list[selection].isCorridor || !roomNodeTypeList.list[selected].isBossRoom && roomNodeTypeList.list[selection].isBossRoom)
+            {
+                if (childRoomNodeIDList.Count > 0)
+                {
+                    for (int i = childRoomNodeIDList.Count - 1; i > 0; i--)
+                    {
+                        RoomNodeSO childRoomNode = roomNodeGraph.GetRoomNode(childRoomNodeIDList[i]);
+
+                        // if the child room node is selected
+                        if (childRoomNode != null)
+                        {
+                            // remove the childID from parent node
+                            RemoveChildRoomNodeIDFromRoomNode(childRoomNode.id);
+
+                            // remove parentID from child
+                            childRoomNode.RemoveParentRoomNodeIDFromRoomNode(id);
+                        }
+                    }
+                }
+            }
         }
 
         if (EditorGUI.EndChangeCheck())
@@ -232,7 +253,30 @@ public class RoomNodeSO : ScriptableObject
 
 
         return true;
+    }
 
+    public bool RemoveChildRoomNodeIDFromRoomNode(string childID)
+    {
+        // if the node contains child ID then remove it
+        if (childRoomNodeIDList.Contains(childID))
+        {
+            childRoomNodeIDList.Remove(childID);
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool RemoveParentRoomNodeIDFromRoomNode(string parentID)
+    {
+        // if the node contains parent ID then remove it
+        if (parentRoomNodeIDList.Contains(parentID))
+        {
+            parentRoomNodeIDList.Remove(parentID);
+            return true;
+        }
+
+        return false;
     }
 #endif
     #endregion

@@ -220,10 +220,21 @@ public class RoomNodeGraphEditor : EditorWindow
         GenericMenu menu = new GenericMenu(); 
 
         menu.AddItem(new GUIContent("Create Room Node"), false, CreateRoomNode, mousePosition);
+        menu.AddSeparator("");
+        menu.AddItem(new GUIContent("Select All Room Nodes"), false, SelectAllRoomNodes);
 
         menu.ShowAsContext();
     }
 
+    private void SelectAllRoomNodes()
+    {
+        foreach(RoomNodeSO roomNode in currentRoomNodeGraph.roomNodeList)
+        {
+            roomNode.isSelected = true;
+        }
+
+        GUI.changed = true;
+    }
     private void CreateRoomNode(object mousePoisitionObject)
     {
         // if the current node graph empty then add entrance room first
